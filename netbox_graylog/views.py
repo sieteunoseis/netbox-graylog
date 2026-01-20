@@ -50,22 +50,17 @@ class DeviceGraylogLogsView(generic.ObjectView):
         # Fetch logs from Graylog
         client = get_client()
         config = settings.PLUGINS_CONFIG.get("netbox_graylog", {})
-        case_insensitive = config.get("case_insensitive", True)
 
         if time_range:
-            # Build query with same case-insensitive logic as get_logs_for_device
+            # Build query with wildcard (Graylog wildcards are case-insensitive)
             hostname = device.name
-            if case_insensitive:
-                escaped_hostname = hostname.replace(".", r"\.")
-                query = f'source:/{escaped_hostname}.*/i'
-            else:
-                query = f"source:{hostname}"
+            query = f"source:{hostname}*"
             logs_data = client.search_logs(query, time_range=time_range)
             logs_data["search_type"] = "hostname"
         else:
             logs_data = client.get_logs_for_device(device)
 
-        # Get external Graylog URL for browser links (config already fetched above)
+        # Get external Graylog URL for browser links
         graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
 
         # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)
@@ -126,22 +121,17 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
         # Fetch logs from Graylog
         client = get_client()
         config = settings.PLUGINS_CONFIG.get("netbox_graylog", {})
-        case_insensitive = config.get("case_insensitive", True)
 
         if time_range:
-            # Build query with same case-insensitive logic as get_logs_for_vm
+            # Build query with wildcard (Graylog wildcards are case-insensitive)
             hostname = vm.name
-            if case_insensitive:
-                escaped_hostname = hostname.replace(".", r"\.")
-                query = f'source:/{escaped_hostname}.*/i'
-            else:
-                query = f"source:{hostname}"
+            query = f"source:{hostname}*"
             logs_data = client.search_logs(query, time_range=time_range)
             logs_data["search_type"] = "hostname"
         else:
             logs_data = client.get_logs_for_vm(vm)
 
-        # Get external Graylog URL for browser links (config already fetched above)
+        # Get external Graylog URL for browser links
         graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
 
         # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)

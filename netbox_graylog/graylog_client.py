@@ -132,20 +132,15 @@ class GraylogClient:
         search_field = self.config.get("search_field", "source")
         use_fqdn = self.config.get("use_fqdn", True)
         fallback_to_ip = self.config.get("fallback_to_ip", True)
-        case_insensitive = self.config.get("case_insensitive", True)
 
         # Build search term from device name
         hostname = device.name
         if not use_fqdn and "." in hostname:
             hostname = hostname.split(".")[0]
 
-        # Try hostname first - use case-insensitive regex for better matching
-        if case_insensitive:
-            # Use regex with case-insensitive flag - escape special chars and match with optional domain
-            escaped_hostname = hostname.replace(".", r"\.")
-            query = f'{search_field}:/{escaped_hostname}.*/i'
-        else:
-            query = f"{search_field}:{hostname}"
+        # Try hostname first - use wildcard for matching (Graylog wildcards are case-insensitive)
+        # Append * to match FQDN variations (e.g., admagw01 matches ADMagw01.ohsu.edu)
+        query = f"{search_field}:{hostname}*"
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
@@ -186,19 +181,15 @@ class GraylogClient:
         search_field = self.config.get("search_field", "source")
         use_fqdn = self.config.get("use_fqdn", True)
         fallback_to_ip = self.config.get("fallback_to_ip", True)
-        case_insensitive = self.config.get("case_insensitive", True)
 
         # Build search term from VM name
         hostname = vm.name
         if not use_fqdn and "." in hostname:
             hostname = hostname.split(".")[0]
 
-        # Try hostname first - use case-insensitive regex for better matching
-        if case_insensitive:
-            escaped_hostname = hostname.replace(".", r"\.")
-            query = f'{search_field}:/{escaped_hostname}.*/i'
-        else:
-            query = f"{search_field}:{hostname}"
+        # Try hostname first - use wildcard for matching (Graylog wildcards are case-insensitive)
+        # Append * to match FQDN variations (e.g., admagw01 matches ADMagw01.ohsu.edu)
+        query = f"{search_field}:{hostname}*"
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
