@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 authors = [
-    {name = "OHSU TUCE", email = "tuce@ohsu.edu"}
+    {name = "sieteunoseis", email = "jeremy.worden@gmail.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
