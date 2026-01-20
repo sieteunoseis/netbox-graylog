@@ -37,7 +37,7 @@ class DeviceGraylogLogsView(generic.ObjectView):
 
     def get(self, request, pk):
         """Handle GET request for the logs tab."""
-        device = self.get_object()
+        device = Device.objects.get(pk=pk)
 
         # Get time range from query params (default to config value)
         time_range = request.GET.get("range", None)
@@ -57,18 +57,35 @@ class DeviceGraylogLogsView(generic.ObjectView):
         else:
             logs_data = client.get_logs_for_device(device)
 
+        # Get external Graylog URL for browser links
+        config = settings.PLUGINS_CONFIG.get("netbox_graylog", {})
+        graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
+
+        # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)
+        logs = []
+        for log in logs_data.get("messages", []):
+            transformed = {
+                "index": log.get("index", ""),
+                "message": {
+                    **log.get("message", {}),
+                    "message_id": log.get("message", {}).get("_id", ""),
+                }
+            }
+            logs.append(transformed)
+
         return render(
             request,
             self.template_name,
             {
                 "object": device,
                 "tab": self.tab,
-                "logs": logs_data.get("messages", []),
+                "logs": logs,
                 "error": logs_data.get("error"),
                 "total_results": logs_data.get("total_results", 0),
                 "query": logs_data.get("query", ""),
                 "time_range": logs_data.get("time_range", 3600),
                 "search_type": logs_data.get("search_type", "hostname"),
+                "graylog_base_url": graylog_base_url,
             },
         )
 
@@ -89,7 +106,7 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
 
     def get(self, request, pk):
         """Handle GET request for the logs tab."""
-        vm = self.get_object()
+        vm = VirtualMachine.objects.get(pk=pk)
 
         # Get time range from query params
         time_range = request.GET.get("range", None)
@@ -109,18 +126,35 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
         else:
             logs_data = client.get_logs_for_vm(vm)
 
+        # Get external Graylog URL for browser links
+        config = settings.PLUGINS_CONFIG.get("netbox_graylog", {})
+        graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
+
+        # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)
+        logs = []
+        for log in logs_data.get("messages", []):
+            transformed = {
+                "index": log.get("index", ""),
+                "message": {
+                    **log.get("message", {}),
+                    "message_id": log.get("message", {}).get("_id", ""),
+                }
+            }
+            logs.append(transformed)
+
         return render(
             request,
             self.template_name,
             {
                 "object": vm,
                 "tab": self.tab,
-                "logs": logs_data.get("messages", []),
+                "logs": logs,
                 "error": logs_data.get("error"),
                 "total_results": logs_data.get("total_results", 0),
                 "query": logs_data.get("query", ""),
                 "time_range": logs_data.get("time_range", 3600),
                 "search_type": logs_data.get("search_type", "hostname"),
+                "graylog_base_url": graylog_base_url,
             },
         )
 

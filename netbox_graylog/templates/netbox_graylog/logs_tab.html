@@ -52,6 +52,7 @@
                                 <th style="width: 150px;">Source</th>
                                 <th style="width: 100px;">Facility</th>
                                 <th>Message</th>
+                                <th style="width: 40px;"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,20 +67,30 @@
                                 <td>
                                     {% with facility=log.message.facility %}
                                     {% if facility == 'local0' or facility == 'local7' %}
-                                    <span class="badge bg-secondary">{{ facility }}</span>
+                                    <span class="badge text-bg-primary">{{ facility }}</span>
                                     {% elif facility == 'daemon' or facility == 'syslog' %}
-                                    <span class="badge bg-info">{{ facility }}</span>
+                                    <span class="badge text-bg-info">{{ facility }}</span>
                                     {% elif facility == 'auth' or facility == 'authpriv' %}
-                                    <span class="badge bg-warning">{{ facility }}</span>
+                                    <span class="badge text-bg-warning">{{ facility }}</span>
                                     {% elif facility == 'kern' %}
-                                    <span class="badge bg-danger">{{ facility }}</span>
+                                    <span class="badge text-bg-danger">{{ facility }}</span>
                                     {% else %}
-                                    <span class="badge bg-light text-dark">{{ facility|default:"-" }}</span>
+                                    <span class="badge text-bg-secondary">{{ facility|default:"-" }}</span>
                                     {% endif %}
                                     {% endwith %}
                                 </td>
                                 <td>
                                     <code class="small" style="word-break: break-word;">{{ log.message.message|truncatechars:500 }}</code>
+                                </td>
+                                <td class="text-center">
+                                    {% if log.message.message_id and log.index %}
+                                    <a href="{{ graylog_base_url }}/messages/{{ log.index }}/{{ log.message.message_id }}"
+                                       target="_blank"
+                                       title="View in Graylog"
+                                       class="text-muted">
+                                        <i class="mdi mdi-open-in-new"></i>
+                                    </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
