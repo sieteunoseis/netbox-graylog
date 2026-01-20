@@ -16,8 +16,8 @@ class GraylogConfig(PluginConfig):
     verbose_name = "Graylog Logs"
     description = "Display recent Graylog logs in device and VM detail pages"
     version = __version__
-    author = "OHSU TUCE"
-    author_email = "tuce@ohsu.edu"
+    author = "sieteunoseis"
+    author_email = "sieteunoseis@github.com"
     base_url = "graylog"
     min_version = "4.0.0"
 

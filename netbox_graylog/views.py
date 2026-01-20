@@ -2,15 +2,23 @@
 Views for NetBox Graylog Plugin
 
 Registers custom tabs on Device and VirtualMachine detail views.
+Provides settings configuration UI.
 """
+
+from django.conf import settings
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.views import View
+from django.views.generic import FormView
 
 from dcim.models import Device
 from virtualization.models import VirtualMachine
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
-from django.shortcuts import render
 
-from .graylog_client import get_client
+from .forms import GraylogSettingsForm
+from .graylog_client import get_client, GraylogClient
 
 
 @register_model_view(Device, name="graylog_logs", path="logs")
@@ -114,4 +122,80 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
                 "time_range": logs_data.get("time_range", 3600),
                 "search_type": logs_data.get("search_type", "hostname"),
             },
+        )
+
+
+class GraylogSettingsView(View):
+    """View for configuring Graylog plugin settings."""
+
+    template_name = "netbox_graylog/settings.html"
+
+    def get_current_config(self):
+        """Get current plugin configuration."""
+        return settings.PLUGINS_CONFIG.get("netbox_graylog", {})
+
+    def get(self, request):
+        """Display the settings form."""
+        config = self.get_current_config()
+        form = GraylogSettingsForm(initial=config)
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+                "config": config,
+            },
+        )
+
+    def post(self, request):
+        """Handle settings form submission."""
+        form = GraylogSettingsForm(request.POST)
+
+        if form.is_valid():
+            # Note: Settings are read-only at runtime in NetBox
+            # Users must update configuration.py manually
+            # This view shows current settings and validates test connections
+            messages.warning(
+                request,
+                "Settings must be configured in NetBox's configuration.py file. "
+                "See the README for configuration instructions.",
+            )
+        else:
+            messages.error(request, "Invalid settings provided.")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+                "config": self.get_current_config(),
+            },
+        )
+
+
+class TestConnectionView(View):
+    """Test connection to Graylog API."""
+
+    def post(self, request):
+        """Test the Graylog connection and return result."""
+        client = get_client()
+
+        # Try a simple search to verify connectivity
+        result = client.search_logs("*", time_range=60, limit=1)
+
+        if result.get("error"):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": result["error"],
+                },
+                status=400,
+            )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Connected successfully. Found {result.get('total_results', 0)} messages in last minute.",
+            }
         )

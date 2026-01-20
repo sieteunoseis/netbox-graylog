@@ -1,0 +1,173 @@
+{% extends 'generic/object.html' %}
+{% load form_helpers %}
+
+{% block title %}Graylog Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-cog"></i> Graylog Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="mdi mdi-information"></i>
+                    <strong>Note:</strong> Settings are configured in NetBox's <code>configuration.py</code> file.
+                    This page shows current settings and allows testing the connection.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <h6 class="text-muted mb-3">Connection Settings</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.graylog_url.label }}</label>
+                        {{ form.graylog_url }}
+                        <small class="text-muted">{{ form.graylog_url.help_text }}</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.graylog_api_token.label }}</label>
+                        {{ form.graylog_api_token }}
+                        <small class="text-muted">{{ form.graylog_api_token.help_text }}</small>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3">Query Settings</h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.log_limit.label }}</label>
+                            {{ form.log_limit }}
+                            <small class="text-muted">{{ form.log_limit.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.time_range.label }}</label>
+                            {{ form.time_range }}
+                            <small class="text-muted">{{ form.time_range.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.timeout.label }}</label>
+                            {{ form.timeout }}
+                            <small class="text-muted">{{ form.timeout.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.cache_timeout.label }}</label>
+                            {{ form.cache_timeout }}
+                            <small class="text-muted">{{ form.cache_timeout.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3">Search Options</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.search_field.label }}</label>
+                        {{ form.search_field }}
+                        <small class="text-muted">{{ form.search_field.help_text }}</small>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        {{ form.use_fqdn }}
+                        <label class="form-check-label">{{ form.use_fqdn.label }}</label>
+                        <br><small class="text-muted">{{ form.use_fqdn.help_text }}</small>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        {{ form.fallback_to_ip }}
+                        <label class="form-check-label">{{ form.fallback_to_ip.label }}</label>
+                        <br><small class="text-muted">{{ form.fallback_to_ip.help_text }}</small>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-connection"></i> Connection Test
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Test connectivity to the Graylog API using current settings.</p>
+                <button type="button" class="btn btn-primary" id="test-connection">
+                    <i class="mdi mdi-play"></i> Test Connection
+                </button>
+                <div id="test-result" class="mt-3" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-help-circle"></i> Configuration Help
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Add to <code>configuration.py</code>:</p>
+                <pre class="bg-light p-2" style="font-size: 0.8rem;"><code>PLUGINS = ['netbox_graylog']
+
+PLUGINS_CONFIG = {
+    'netbox_graylog': {
+        'graylog_url': 'http://graylog:9000',
+        'graylog_api_token': 'your-token',
+    }
+}</code></pre>
+                <a href="https://github.com/sieteunoseis/netbox-graylog" target="_blank" class="btn btn-outline-secondary btn-sm">
+                    <i class="mdi mdi-github"></i> Documentation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('test-connection').addEventListener('click', function() {
+    var btn = this;
+    var resultDiv = document.getElementById('test-result');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Testing...';
+    resultDiv.style.display = 'none';
+
+    fetch('{% url "plugins:netbox_graylog:test_connection" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.style.display = 'block';
+        if (data.success) {
+            resultDiv.className = 'alert alert-success';
+            resultDiv.innerHTML = '<i class="mdi mdi-check-circle"></i> ' + data.message;
+        } else {
+            resultDiv.className = 'alert alert-danger';
+            resultDiv.innerHTML = '<i class="mdi mdi-alert-circle"></i> ' + data.error;
+        }
+    })
+    .catch(error => {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'alert alert-danger';
+        resultDiv.innerHTML = '<i class="mdi mdi-alert-circle"></i> Request failed: ' + error;
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="mdi mdi-play"></i> Test Connection';
+    });
+});
+</script>
+{% endblock %}
