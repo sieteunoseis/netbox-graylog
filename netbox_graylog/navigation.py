@@ -2,8 +2,7 @@
 Navigation menu items for NetBox Graylog Plugin.
 """
 
-from netbox.plugins import PluginMenu, PluginMenuItem, PluginMenuButton
-
+from netbox.plugins import PluginMenu, PluginMenuItem
 
 menu = PluginMenu(
     label="Graylog",

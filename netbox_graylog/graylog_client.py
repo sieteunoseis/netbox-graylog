@@ -5,6 +5,7 @@ Handles communication with Graylog's REST API for log retrieval.
 """
 
 import logging
+
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -144,12 +145,7 @@ class GraylogClient:
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
-        if (
-            fallback_to_ip
-            and not result.get("messages")
-            and not result.get("error")
-            and device.primary_ip4
-        ):
+        if fallback_to_ip and not result.get("messages") and not result.get("error") and device.primary_ip4:
             ip = str(device.primary_ip4.address).split("/")[0]
             # Try gl2_remote_ip for IP-based search
             query = f"gl2_remote_ip:{ip}"
@@ -193,12 +189,7 @@ class GraylogClient:
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
-        if (
-            fallback_to_ip
-            and not result.get("messages")
-            and not result.get("error")
-            and vm.primary_ip4
-        ):
+        if fallback_to_ip and not result.get("messages") and not result.get("error") and vm.primary_ip4:
             ip = str(vm.primary_ip4.address).split("/")[0]
             query = f"gl2_remote_ip:{ip}"
             result = self.search_logs(query)

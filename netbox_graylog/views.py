@@ -5,20 +5,18 @@ Registers custom tabs on Device and VirtualMachine detail views.
 Provides settings configuration UI.
 """
 
+from dcim.models import Device
 from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.views import View
-from django.views.generic import FormView
-
-from dcim.models import Device
-from virtualization.models import VirtualMachine
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
+from virtualization.models import VirtualMachine
 
 from .forms import GraylogSettingsForm
-from .graylog_client import get_client, GraylogClient
+from .graylog_client import get_client
 
 
 @register_model_view(Device, name="graylog_logs", path="logs")
@@ -71,7 +69,7 @@ class DeviceGraylogLogsView(generic.ObjectView):
                 "message": {
                     **log.get("message", {}),
                     "message_id": log.get("message", {}).get("_id", ""),
-                }
+                },
             }
             logs.append(transformed)
 
@@ -142,7 +140,7 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
                 "message": {
                     **log.get("message", {}),
                     "message_id": log.get("message", {}).get("_id", ""),
-                }
+                },
             }
             logs.append(transformed)
 

@@ -117,3 +117,9 @@ dmypy.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code local settings
+.claude/
+
+# Wiki drafts (GitHub Wiki is a separate repo)
+wiki/

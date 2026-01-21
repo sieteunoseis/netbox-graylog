@@ -1,10 +1,13 @@
 # NetBox Graylog Plugin
 
+<img src="docs/icon.png" alt="NetBox Graylog Plugin" width="100" align="right">
+
 A NetBox plugin that displays recent Graylog logs in Device and VirtualMachine detail pages.
 
 ![NetBox Version](https://img.shields.io/badge/NetBox-4.0+-blue)
 ![Python Version](https://img.shields.io/badge/Python-3.10+-green)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/sieteunoseis/netbox-graylog/actions/workflows/ci.yml/badge.svg)](https://github.com/sieteunoseis/netbox-graylog/actions/workflows/ci.yml)
 
 ## Features
 
@@ -28,9 +31,11 @@ View Graylog logs directly on Device and VirtualMachine pages.
 
 ## Requirements
 
-- NetBox 4.0 or higher
+- NetBox 4.0 or higher (tested on NetBox 4.x only)
 - Graylog 4.0 or higher with API access
 - Python 3.10+
+
+> **Note:** This plugin is developed and tested exclusively on NetBox 4.x. It is not compatible with NetBox 3.x due to API and model changes.
 
 ## Installation
 
@@ -158,6 +163,14 @@ pip install -e ".[dev]"
 black netbox_graylog/
 flake8 netbox_graylog/
 ```
+
+## Documentation
+
+Full documentation is available in the [GitHub Wiki](https://github.com/sieteunoseis/netbox-graylog/wiki).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and breaking changes.
 
 ## License
 
