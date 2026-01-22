@@ -25,9 +25,9 @@
                     <small class="text-muted">
                         Query: <code>{{ query }}</code>
                         {% if search_type == 'ip' %}
-                            <span class="badge bg-info">Matched by IP</span>
+                            <span class="badge bg-info text-dark">Matched by IP</span>
                         {% elif search_type == 'source_ip' %}
-                            <span class="badge bg-info">Matched by source IP</span>
+                            <span class="badge bg-info text-dark">Matched by source IP</span>
                         {% endif %}
                         | Found: <strong>{{ total_results }}</strong> messages
                         | Showing: <strong>{{ logs|length }}</strong>
