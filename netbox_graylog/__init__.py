@@ -6,7 +6,7 @@ Display recent Graylog logs in Device and VirtualMachine detail pages.
 
 from netbox.plugins import PluginConfig
 
-__version__ = "1.0.0"
+__version__ = "1.0.2"
 
 
 class GraylogConfig(PluginConfig):
