@@ -153,8 +153,9 @@ class GraylogClient:
 
         # Try hostname first - use wildcard for matching (Graylog wildcards are case-insensitive)
         # Append * to match FQDN variations (e.g., admagw01 matches ADMagw01.ohsu.edu)
-        query = f"{search_field}:{hostname}*"
-        result = self.search_logs(query)
+        hostname_query = f"{search_field}:{hostname}*"
+        result = self.search_logs(hostname_query)
+        result["search_type"] = "hostname"
 
         # If no results and fallback enabled, try primary IP
         if (
@@ -165,18 +166,17 @@ class GraylogClient:
         ):
             ip = str(device.primary_ip4.address).split("/")[0]
             # Try gl2_remote_ip for IP-based search
-            query = f"gl2_remote_ip:{ip}"
-            result = self.search_logs(query)
-            if result.get("messages"):
+            ip_result = self.search_logs(f"gl2_remote_ip:{ip}")
+            if ip_result.get("messages"):
+                result = ip_result
                 result["search_type"] = "ip"
             else:
                 # Also try source field with IP
-                query = f"source:{ip}"
-                result = self.search_logs(query)
-                if result.get("messages"):
+                ip_result = self.search_logs(f"source:{ip}")
+                if ip_result.get("messages"):
+                    result = ip_result
                     result["search_type"] = "source_ip"
-        else:
-            result["search_type"] = "hostname"
+            # If IP fallback found nothing, keep original hostname query in result
 
         result["device_name"] = device.name
         return result
