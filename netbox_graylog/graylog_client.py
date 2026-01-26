@@ -151,33 +151,18 @@ class GraylogClient:
         if not use_fqdn and "." in hostname:
             hostname = hostname.split(".")[0]
 
-        # Try hostname first - use wildcard for matching (Graylog wildcards are case-insensitive)
-        # Append * to match FQDN variations (e.g., admagw01 matches ADMagw01.ohsu.edu)
+        # Build query - hostname with optional IP fallback using OR
         hostname_query = f"{search_field}:{hostname}*"
-        result = self.search_logs(hostname_query)
-        result["search_type"] = "hostname"
 
-        # If no results and fallback enabled, try primary IP
-        if (
-            fallback_to_ip
-            and not result.get("messages")
-            and not result.get("error")
-            and device.primary_ip4
-        ):
+        if fallback_to_ip and device.primary_ip4:
             ip = str(device.primary_ip4.address).split("/")[0]
-            # Try gl2_remote_ip for IP-based search
-            ip_result = self.search_logs(f"gl2_remote_ip:{ip}")
-            if ip_result.get("messages"):
-                result = ip_result
-                result["search_type"] = "ip"
-            else:
-                # Also try source field with IP
-                ip_result = self.search_logs(f"source:{ip}")
-                if ip_result.get("messages"):
-                    result = ip_result
-                    result["search_type"] = "source_ip"
-            # If IP fallback found nothing, keep original hostname query in result
+            # Combine hostname and IP queries with OR for single search
+            query = f"({hostname_query} OR gl2_remote_ip:{ip} OR source:{ip})"
+        else:
+            query = hostname_query
 
+        result = self.search_logs(query)
+        result["search_type"] = "combined" if " OR " in query else "hostname"
         result["device_name"] = device.name
         return result
 
