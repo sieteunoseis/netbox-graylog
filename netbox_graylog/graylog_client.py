@@ -130,6 +130,9 @@ class GraylogClient:
         1. Device name (FQDN or shortname) - case-insensitive regex match
         2. Primary IP address (if fallback enabled)
 
+        For virtual chassis members, uses the chassis name (original hostname)
+        instead of the member-specific name (e.g., "switch" instead of "switch.2").
+
         Args:
             device: NetBox Device object
 
@@ -141,7 +144,10 @@ class GraylogClient:
         fallback_to_ip = self.config.get("fallback_to_ip", True)
 
         # Build search term from device name
-        hostname = device.name
+        # Use VC name for virtual chassis members (original hostname)
+        hostname = (
+            device.virtual_chassis.name if device.virtual_chassis else device.name
+        )
         if not use_fqdn and "." in hostname:
             hostname = hostname.split(".")[0]
 
