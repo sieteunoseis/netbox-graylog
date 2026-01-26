@@ -108,9 +108,15 @@ class GraylogClient:
         except requests.exceptions.HTTPError as e:
             logger.error(f"HTTP error from Graylog: {e}")
             if e.response.status_code == 401:
-                return {"error": "Authentication failed - check API token", "messages": []}
+                return {
+                    "error": "Authentication failed - check API token",
+                    "messages": [],
+                }
             elif e.response.status_code == 403:
-                return {"error": "Permission denied - check token permissions", "messages": []}
+                return {
+                    "error": "Permission denied - check token permissions",
+                    "messages": [],
+                }
             return {"error": f"HTTP error: {e.response.status_code}", "messages": []}
         except Exception as e:
             logger.exception(f"Unexpected error querying Graylog: {e}")
@@ -145,7 +151,12 @@ class GraylogClient:
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
-        if fallback_to_ip and not result.get("messages") and not result.get("error") and device.primary_ip4:
+        if (
+            fallback_to_ip
+            and not result.get("messages")
+            and not result.get("error")
+            and device.primary_ip4
+        ):
             ip = str(device.primary_ip4.address).split("/")[0]
             # Try gl2_remote_ip for IP-based search
             query = f"gl2_remote_ip:{ip}"
@@ -189,7 +200,12 @@ class GraylogClient:
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
-        if fallback_to_ip and not result.get("messages") and not result.get("error") and vm.primary_ip4:
+        if (
+            fallback_to_ip
+            and not result.get("messages")
+            and not result.get("error")
+            and vm.primary_ip4
+        ):
             ip = str(vm.primary_ip4.address).split("/")[0]
             query = f"gl2_remote_ip:{ip}"
             result = self.search_logs(query)
