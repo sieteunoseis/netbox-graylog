@@ -23,12 +23,12 @@ A NetBox plugin that displays recent Graylog logs in Device and VirtualMachine d
 ### Settings Page
 Configure Graylog connection settings directly in the NetBox UI.
 
-![Settings Page](screenshots/netbox-graylog-settings.png)
+![Settings Page](https://raw.githubusercontent.com/sieteunoseis/netbox-graylog/main/screenshots/netbox-graylog-settings.png)
 
 ### Logs Tab
 View Graylog logs directly on Device and VirtualMachine pages.
 
-![Logs Tab](screenshots/netbox-graylog-logs.png)
+![Logs Tab](https://raw.githubusercontent.com/sieteunoseis/netbox-graylog/main/screenshots/netbox-graylog-logs.png)
 
 ## Requirements
 
