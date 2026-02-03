@@ -1,0 +1,107 @@
+{% load helpers %}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        {# Time Range Selector #}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-file-document-outline"></i> Graylog Logs
+                </h5>
+                <div class="btn-group" role="group" aria-label="Time range">
+                    <a href="?range=300" class="btn btn-sm {% if time_range == 300 %}btn-primary{% else %}btn-outline-secondary{% endif %}">5m</a>
+                    <a href="?range=900" class="btn btn-sm {% if time_range == 900 %}btn-primary{% else %}btn-outline-secondary{% endif %}">15m</a>
+                    <a href="?range=3600" class="btn btn-sm {% if time_range == 3600 %}btn-primary{% else %}btn-outline-secondary{% endif %}">1h</a>
+                    <a href="?range=14400" class="btn btn-sm {% if time_range == 14400 %}btn-primary{% else %}btn-outline-secondary{% endif %}">4h</a>
+                    <a href="?range=86400" class="btn btn-sm {% if time_range == 86400 %}btn-primary{% else %}btn-outline-secondary{% endif %}">24h</a>
+                    <a href="?range=604800" class="btn btn-sm {% if time_range == 604800 %}btn-primary{% else %}btn-outline-secondary{% endif %}">7d</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {# Query Info #}
+                <div class="mb-3">
+                    <small class="text-muted">
+                        Query: <code>{{ query }}</code>
+                        {% if search_type == 'ip' %}
+                            <span class="badge bg-info text-dark">Matched by IP</span>
+                        {% elif search_type == 'source_ip' %}
+                            <span class="badge bg-info text-dark">Matched by source IP</span>
+                        {% endif %}
+                        | Found: <strong>{{ total_results }}</strong> messages
+                        | Showing: <strong>{{ logs|length }}</strong>
+                    </small>
+                </div>
+
+                {# Error Display #}
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="mdi mdi-alert-circle"></i>
+                    <strong>Error:</strong> {{ error }}
+                </div>
+                {% endif %}
+
+                {# Logs Table #}
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 160px;">Timestamp</th>
+                                <th style="width: 150px;">Source</th>
+                                <th style="width: 100px;">Facility</th>
+                                <th>Message</th>
+                                <th style="width: 40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    <small>{{ log.message.timestamp }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ log.message.source|default:"-" }}</small>
+                                </td>
+                                <td>
+                                    {% with facility=log.message.facility %}
+                                    {% if facility == 'local0' or facility == 'local7' %}
+                                    <span class="badge text-bg-primary">{{ facility }}</span>
+                                    {% elif facility == 'daemon' or facility == 'syslog' %}
+                                    <span class="badge text-bg-info">{{ facility }}</span>
+                                    {% elif facility == 'auth' or facility == 'authpriv' %}
+                                    <span class="badge text-bg-warning">{{ facility }}</span>
+                                    {% elif facility == 'kern' %}
+                                    <span class="badge text-bg-danger">{{ facility }}</span>
+                                    {% else %}
+                                    <span class="badge text-bg-secondary">{{ facility|default:"-" }}</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <code class="small" style="word-break: break-word;">{{ log.message.message|truncatechars:500 }}</code>
+                                </td>
+                                <td class="text-center">
+                                    {% if log.message.message_id and log.index %}
+                                    <a href="{{ graylog_base_url }}/messages/{{ log.index }}/{{ log.message.message_id }}"
+                                       target="_blank"
+                                       title="View in Graylog"
+                                       class="text-muted">
+                                        <i class="mdi mdi-open-in-new"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% elif not error %}
+                <div class="alert alert-info" role="alert">
+                    <i class="mdi mdi-information-outline"></i>
+                    No logs found for this device in the selected time range.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

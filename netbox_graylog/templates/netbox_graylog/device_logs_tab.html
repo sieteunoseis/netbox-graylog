@@ -1,0 +1,20 @@
+{% extends 'dcim/device/base.html' %}
+{% load helpers %}
+
+{% block content %}
+{% if loading %}
+<div id="graylog-content"
+     hx-get="{% url 'plugins:netbox_graylog:device_content' pk=object.pk %}{% if time_range_param %}?range={{ time_range_param }}{% endif %}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading Graylog logs...</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

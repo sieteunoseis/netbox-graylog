@@ -8,8 +8,10 @@ Provides settings configuration UI.
 from dcim.models import Device
 from django.conf import settings
 from django.contrib import messages
-from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.views import View
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
@@ -21,10 +23,10 @@ from .graylog_client import get_client
 
 @register_model_view(Device, name="graylog_logs", path="logs")
 class DeviceGraylogLogsView(generic.ObjectView):
-    """Display Graylog logs for a Device."""
+    """Display Graylog logs for a Device with async loading."""
 
     queryset = Device.objects.all()
-    template_name = "netbox_graylog/logs_tab.html"
+    template_name = "netbox_graylog/device_logs_tab.html"
 
     tab = ViewTab(
         label="Logs",
@@ -34,7 +36,31 @@ class DeviceGraylogLogsView(generic.ObjectView):
     )
 
     def get(self, request, pk):
-        """Handle GET request for the logs tab."""
+        """Render initial tab with loading spinner - content loads via htmx."""
+        device = Device.objects.get(pk=pk)
+
+        # Pass time_range for htmx URL construction
+        time_range = request.GET.get("range", "")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "object": device,
+                "tab": self.tab,
+                "loading": True,
+                "time_range_param": time_range,
+            },
+        )
+
+
+class DeviceGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """HTMX endpoint that returns Graylog content for async loading."""
+
+    permission_required = "dcim.view_device"
+
+    def get(self, request, pk):
+        """Fetch Graylog logs and return HTML content."""
         device = Device.objects.get(pk=pk)
 
         # Get time range from query params (default to config value)
@@ -78,29 +104,30 @@ class DeviceGraylogLogsView(generic.ObjectView):
             }
             logs.append(transformed)
 
-        return render(
-            request,
-            self.template_name,
-            {
-                "object": device,
-                "tab": self.tab,
-                "logs": logs,
-                "error": logs_data.get("error"),
-                "total_results": logs_data.get("total_results", 0),
-                "query": logs_data.get("query", ""),
-                "time_range": logs_data.get("time_range", 3600),
-                "search_type": logs_data.get("search_type", "hostname"),
-                "graylog_base_url": graylog_base_url,
-            },
+        return HttpResponse(
+            render_to_string(
+                "netbox_graylog/logs_tab_content.html",
+                {
+                    "object": device,
+                    "logs": logs,
+                    "error": logs_data.get("error"),
+                    "total_results": logs_data.get("total_results", 0),
+                    "query": logs_data.get("query", ""),
+                    "time_range": logs_data.get("time_range", 3600),
+                    "search_type": logs_data.get("search_type", "hostname"),
+                    "graylog_base_url": graylog_base_url,
+                },
+                request=request,
+            )
         )
 
 
 @register_model_view(VirtualMachine, name="graylog_logs", path="logs")
 class VirtualMachineGraylogLogsView(generic.ObjectView):
-    """Display Graylog logs for a VirtualMachine."""
+    """Display Graylog logs for a VirtualMachine with async loading."""
 
     queryset = VirtualMachine.objects.all()
-    template_name = "netbox_graylog/logs_tab.html"
+    template_name = "netbox_graylog/vm_logs_tab.html"
 
     tab = ViewTab(
         label="Logs",
@@ -110,7 +137,31 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
     )
 
     def get(self, request, pk):
-        """Handle GET request for the logs tab."""
+        """Render initial tab with loading spinner - content loads via htmx."""
+        vm = VirtualMachine.objects.get(pk=pk)
+
+        # Pass time_range for htmx URL construction
+        time_range = request.GET.get("range", "")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "object": vm,
+                "tab": self.tab,
+                "loading": True,
+                "time_range_param": time_range,
+            },
+        )
+
+
+class VMGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """HTMX endpoint that returns Graylog content for VM async loading."""
+
+    permission_required = "virtualization.view_virtualmachine"
+
+    def get(self, request, pk):
+        """Fetch Graylog logs and return HTML content."""
         vm = VirtualMachine.objects.get(pk=pk)
 
         # Get time range from query params
@@ -151,20 +202,21 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
             }
             logs.append(transformed)
 
-        return render(
-            request,
-            self.template_name,
-            {
-                "object": vm,
-                "tab": self.tab,
-                "logs": logs,
-                "error": logs_data.get("error"),
-                "total_results": logs_data.get("total_results", 0),
-                "query": logs_data.get("query", ""),
-                "time_range": logs_data.get("time_range", 3600),
-                "search_type": logs_data.get("search_type", "hostname"),
-                "graylog_base_url": graylog_base_url,
-            },
+        return HttpResponse(
+            render_to_string(
+                "netbox_graylog/logs_tab_content.html",
+                {
+                    "object": vm,
+                    "logs": logs,
+                    "error": logs_data.get("error"),
+                    "total_results": logs_data.get("total_results", 0),
+                    "query": logs_data.get("query", ""),
+                    "time_range": logs_data.get("time_range", 3600),
+                    "search_type": logs_data.get("search_type", "hostname"),
+                    "graylog_base_url": graylog_base_url,
+                },
+                request=request,
+            )
         )
 
 
