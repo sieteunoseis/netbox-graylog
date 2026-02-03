@@ -12,9 +12,7 @@ class GraylogSettingsForm(forms.Form):
         label="Graylog URL",
         help_text="Base URL for Graylog API (e.g., http://graylog:9000)",
         required=True,
-        widget=forms.URLInput(
-            attrs={"class": "form-control", "placeholder": "http://graylog:9000"}
-        ),
+        widget=forms.URLInput(attrs={"class": "form-control", "placeholder": "http://graylog:9000"}),
     )
 
     graylog_api_token = forms.CharField(

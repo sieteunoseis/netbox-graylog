@@ -145,9 +145,7 @@ class GraylogClient:
 
         # Build search term from device name
         # Use VC name for virtual chassis members (original hostname)
-        hostname = (
-            device.virtual_chassis.name if device.virtual_chassis else device.name
-        )
+        hostname = device.virtual_chassis.name if device.virtual_chassis else device.name
         if not use_fqdn and "." in hostname:
             hostname = hostname.split(".")[0]
 
@@ -191,12 +189,7 @@ class GraylogClient:
         result = self.search_logs(query)
 
         # If no results and fallback enabled, try primary IP
-        if (
-            fallback_to_ip
-            and not result.get("messages")
-            and not result.get("error")
-            and vm.primary_ip4
-        ):
+        if fallback_to_ip and not result.get("messages") and not result.get("error") and vm.primary_ip4:
             ip = str(vm.primary_ip4.address).split("/")[0]
             query = f"gl2_remote_ip:{ip}"
             result = self.search_logs(query)

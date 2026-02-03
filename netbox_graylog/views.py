@@ -78,9 +78,7 @@ class DeviceGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View
         if time_range:
             # Build query with wildcard (Graylog wildcards are case-insensitive)
             # Use VC name for virtual chassis members (original hostname)
-            hostname = (
-                device.virtual_chassis.name if device.virtual_chassis else device.name
-            )
+            hostname = device.virtual_chassis.name if device.virtual_chassis else device.name
             query = f"source:{hostname}*"
             logs_data = client.search_logs(query, time_range=time_range)
             logs_data["search_type"] = "hostname"
@@ -88,9 +86,7 @@ class DeviceGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View
             logs_data = client.get_logs_for_device(device)
 
         # Get external Graylog URL for browser links
-        graylog_base_url = config.get(
-            "graylog_external_url", config.get("graylog_url", "")
-        ).rstrip("/")
+        graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
 
         # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)
         logs = []
@@ -186,9 +182,7 @@ class VMGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View):
             logs_data = client.get_logs_for_vm(vm)
 
         # Get external Graylog URL for browser links
-        graylog_base_url = config.get(
-            "graylog_external_url", config.get("graylog_url", "")
-        ).rstrip("/")
+        graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
 
         # Transform logs to rename _id to message_id (Django templates can't access underscore-prefixed attrs)
         logs = []
