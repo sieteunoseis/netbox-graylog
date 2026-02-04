@@ -4,9 +4,13 @@ NetBox Graylog Plugin
 Display recent Graylog logs in Device and VirtualMachine detail pages.
 """
 
+import logging
+
 from netbox.plugins import PluginConfig
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"
+
+logger = logging.getLogger(__name__)
 
 
 class GraylogConfig(PluginConfig):
@@ -36,6 +40,60 @@ class GraylogConfig(PluginConfig):
         "use_fqdn": True,  # Use FQDN for hostname matching
         "fallback_to_ip": True,  # Fall back to primary IP if hostname not found
     }
+
+    def ready(self):
+        """Register endpoint view if netbox_endpoints is available."""
+        super().ready()
+        self._register_endpoint_views()
+
+    def _register_endpoint_views(self):
+        """Register Graylog Logs tab for Endpoints if plugin is installed."""
+        try:
+            from netbox_endpoints.models import Endpoint
+            from utilities.views import ViewTab, register_model_view
+            from netbox.views import generic
+            from django.shortcuts import render
+
+            # Check if already registered
+            from utilities.views import registry
+            views_dict = registry.get('views', {})
+            endpoint_views = views_dict.get('netbox_endpoints', {}).get('endpoint', [])
+            if any(v.get('name') == 'graylog_logs' for v in endpoint_views):
+                return  # Already registered
+
+            @register_model_view(Endpoint, name="graylog_logs", path="logs")
+            class EndpointGraylogLogsView(generic.ObjectView):
+                """Display Graylog logs for an Endpoint with async loading."""
+
+                queryset = Endpoint.objects.all()
+                template_name = "netbox_graylog/endpoint_logs_tab.html"
+
+                tab = ViewTab(
+                    label="Logs",
+                    weight=9000,
+                    permission="netbox_endpoints.view_endpoint",
+                    hide_if_empty=False,
+                )
+
+                def get(self, request, pk):
+                    endpoint = Endpoint.objects.get(pk=pk)
+                    time_range = request.GET.get("range", "")
+                    return render(
+                        request,
+                        self.template_name,
+                        {
+                            "object": endpoint,
+                            "tab": self.tab,
+                            "loading": True,
+                            "time_range_param": time_range,
+                        },
+                    )
+
+            logger.info("Registered Graylog Logs tab for Endpoint model")
+        except ImportError:
+            logger.debug("netbox_endpoints not installed, skipping endpoint view registration")
+        except Exception as e:
+            logger.warning(f"Could not register endpoint views: {e}")
 
 
 config = GraylogConfig

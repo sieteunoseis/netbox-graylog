@@ -20,6 +20,13 @@ from virtualization.models import VirtualMachine
 from .forms import GraylogSettingsForm
 from .graylog_client import get_client
 
+# Check if netbox_endpoints plugin is installed
+try:
+    from netbox_endpoints.models import Endpoint
+    ENDPOINTS_PLUGIN_INSTALLED = True
+except ImportError:
+    ENDPOINTS_PLUGIN_INSTALLED = False
+
 
 @register_model_view(Device, name="graylog_logs", path="logs")
 class DeviceGraylogLogsView(generic.ObjectView):
@@ -288,3 +295,74 @@ class TestConnectionView(View):
                 "message": f"Connected successfully. Found {result.get('total_results', 0)} messages in last minute.",
             }
         )
+
+
+# Endpoint views - only available if netbox_endpoints is installed
+if ENDPOINTS_PLUGIN_INSTALLED:
+
+    class EndpointGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View):
+        """HTMX endpoint that returns Graylog content for Endpoint async loading."""
+
+        permission_required = "netbox_endpoints.view_endpoint"
+
+        def get(self, request, pk):
+            """Fetch Graylog logs and return HTML content."""
+            endpoint = Endpoint.objects.get(pk=pk)
+
+            # Get time range from query params
+            time_range = request.GET.get("range", None)
+            if time_range:
+                try:
+                    time_range = int(time_range)
+                except ValueError:
+                    time_range = None
+
+            # Fetch logs from Graylog
+            client = get_client()
+            config = settings.PLUGINS_CONFIG.get("netbox_graylog", {})
+
+            # For endpoints, search by name or MAC address
+            search_term = endpoint.name if endpoint.name else str(endpoint.mac_address)
+
+            if time_range:
+                query = f"source:{search_term}*"
+                logs_data = client.search_logs(query, time_range=time_range)
+                logs_data["search_type"] = "name"
+            else:
+                # Default search by endpoint name/MAC
+                query = f"source:{search_term}*"
+                default_time_range = config.get("time_range", 3600)
+                logs_data = client.search_logs(query, time_range=default_time_range)
+                logs_data["search_type"] = "name"
+
+            # Get external Graylog URL for browser links
+            graylog_base_url = config.get("graylog_external_url", config.get("graylog_url", "")).rstrip("/")
+
+            # Transform logs to rename _id to message_id
+            logs = []
+            for log in logs_data.get("messages", []):
+                transformed = {
+                    "index": log.get("index", ""),
+                    "message": {
+                        **log.get("message", {}),
+                        "message_id": log.get("message", {}).get("_id", ""),
+                    },
+                }
+                logs.append(transformed)
+
+            return HttpResponse(
+                render_to_string(
+                    "netbox_graylog/logs_tab_content.html",
+                    {
+                        "object": endpoint,
+                        "logs": logs,
+                        "error": logs_data.get("error"),
+                        "total_results": logs_data.get("total_results", 0),
+                        "query": logs_data.get("query", ""),
+                        "time_range": logs_data.get("time_range", 3600),
+                        "search_type": logs_data.get("search_type", "name"),
+                        "graylog_base_url": graylog_base_url,
+                    },
+                    request=request,
+                )
+            )
