@@ -23,6 +23,7 @@ from .graylog_client import get_client
 # Check if netbox_endpoints plugin is installed
 try:
     from netbox_endpoints.models import Endpoint
+
     ENDPOINTS_PLUGIN_INSTALLED = True
 except ImportError:
     ENDPOINTS_PLUGIN_INSTALLED = False
