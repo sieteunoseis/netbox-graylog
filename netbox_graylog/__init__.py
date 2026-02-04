@@ -8,7 +8,7 @@ import logging
 
 from netbox.plugins import PluginConfig
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 
 logger = logging.getLogger(__name__)
 
@@ -48,18 +48,25 @@ class GraylogConfig(PluginConfig):
 
     def _register_endpoint_views(self):
         """Register Graylog Logs tab for Endpoints if plugin is installed."""
+        import sys
+
+        # Quick check if netbox_endpoints is available
+        if "netbox_endpoints" not in sys.modules:
+            try:
+                import importlib.util
+
+                if importlib.util.find_spec("netbox_endpoints") is None:
+                    logger.debug("netbox_endpoints not installed, skipping endpoint view registration")
+                    return
+            except Exception:
+                logger.debug("netbox_endpoints not available, skipping endpoint view registration")
+                return
+
         try:
             from django.shortcuts import render
             from netbox.views import generic
             from netbox_endpoints.models import Endpoint
-
-            # Check if already registered
-            from utilities.views import ViewTab, register_model_view, registry
-
-            views_dict = registry.get("views", {})
-            endpoint_views = views_dict.get("netbox_endpoints", {}).get("endpoint", [])
-            if any(v.get("name") == "graylog_logs" for v in endpoint_views):
-                return  # Already registered
+            from utilities.views import ViewTab, register_model_view
 
             @register_model_view(Endpoint, name="graylog_logs", path="logs")
             class EndpointGraylogLogsView(generic.ObjectView):
