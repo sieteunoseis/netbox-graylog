@@ -8,7 +8,7 @@ import logging
 
 from netbox.plugins import PluginConfig
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +17,10 @@ class GraylogConfig(PluginConfig):
     """Plugin configuration for NetBox Graylog integration."""
 
     name = "netbox_graylog"
-    verbose_name = "Graylog Logs"
+    verbose_name = "NetBox Graylog"
     description = "Display recent Graylog logs in device and VM detail pages"
     version = __version__
-    author = "sieteunoseis"
+    author = "Jeremy Worden"
     author_email = "sieteunoseis@github.com"
     base_url = "graylog"
     min_version = "4.0.0"
@@ -76,8 +76,8 @@ class GraylogConfig(PluginConfig):
                 template_name = "netbox_graylog/endpoint_logs_tab.html"
 
                 tab = ViewTab(
-                    label="Logs",
-                    weight=9000,
+                    label="Graylog",
+                    weight=9004,
                     permission="netbox_endpoints.view_endpoint",
                     hide_if_empty=False,
                 )

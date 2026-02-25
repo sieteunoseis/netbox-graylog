@@ -37,8 +37,8 @@ class DeviceGraylogLogsView(generic.ObjectView):
     template_name = "netbox_graylog/device_logs_tab.html"
 
     tab = ViewTab(
-        label="Logs",
-        weight=9000,
+        label="Graylog",
+        weight=9004,
         permission="dcim.view_device",
         hide_if_empty=False,
     )
@@ -134,8 +134,8 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
     template_name = "netbox_graylog/vm_logs_tab.html"
 
     tab = ViewTab(
-        label="Logs",
-        weight=9000,
+        label="Graylog",
+        weight=9004,
         permission="virtualization.view_virtualmachine",
         hide_if_empty=False,
     )
