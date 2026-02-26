@@ -31,6 +31,8 @@ dependencies = [
 Homepage = "https://github.com/sieteunoseis/netbox-graylog"
 Repository = "https://github.com/sieteunoseis/netbox-graylog"
 Issues = "https://github.com/sieteunoseis/netbox-graylog/issues"
+Documentation = "https://github.com/sieteunoseis/netbox-graylog/wiki"
+Changelog = "https://github.com/sieteunoseis/netbox-graylog/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [

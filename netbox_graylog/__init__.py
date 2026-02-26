@@ -21,9 +21,10 @@ class GraylogConfig(PluginConfig):
     description = "Display recent Graylog logs in device and VM detail pages"
     version = __version__
     author = "Jeremy Worden"
-    author_email = "sieteunoseis@github.com"
+    author_email = "jeremy.worden@gmail.com"
     base_url = "graylog"
     min_version = "4.0.0"
+    max_version = "5.99"
 
     # Required settings - plugin won't load without these
     required_settings = []
