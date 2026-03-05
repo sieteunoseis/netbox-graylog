@@ -14,9 +14,7 @@ class Migration(migrations.Migration):
             options={
                 "managed": False,
                 "default_permissions": (),
-                "permissions": (
-                    ("configure_graylog", "Can configure Graylog plugin settings"),
-                ),
+                "permissions": (("configure_graylog", "Can configure Graylog plugin settings"),),
             },
         ),
     ]

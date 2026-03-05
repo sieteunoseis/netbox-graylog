@@ -7,6 +7,4 @@ class Graylog(models.Model):
     class Meta:
         managed = False
         default_permissions = ()
-        permissions = (
-            ("configure_graylog", "Can configure Graylog plugin settings"),
-        )
+        permissions = (("configure_graylog", "Can configure Graylog plugin settings"),)
