@@ -222,9 +222,10 @@ class VMGraylogContentView(LoginRequiredMixin, PermissionRequiredMixin, View):
         )
 
 
-class GraylogSettingsView(View):
+class GraylogSettingsView(LoginRequiredMixin, PermissionRequiredMixin, View):
     """View for configuring Graylog plugin settings."""
 
+    permission_required = "netbox_graylog.configure_graylog"
     template_name = "netbox_graylog/settings.html"
 
     def get_current_config(self):
