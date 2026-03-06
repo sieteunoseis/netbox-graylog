@@ -1,0 +1,50 @@
+{% load i18n %}
+
+{% if error %}
+  <div class="text-center py-2">
+    <span class="text-danger">
+      <i class="mdi mdi-alert"></i> {{ error }}
+    </span>
+  </div>
+{% elif total is not None %}
+  <div class="d-flex flex-wrap justify-content-center gap-3 py-2">
+    <div class="text-center">
+      <span class="badge bg-info text-dark fs-4 px-3 py-2">{{ total|default:"0" }}</span>
+      <div class="mt-1 small fw-bold text-muted">{% trans "Total" %}</div>
+    </div>
+    {% if errors %}
+    <div class="text-center">
+      <span class="badge bg-danger text-white fs-4 px-3 py-2">{{ errors }}</span>
+      <div class="mt-1 small fw-bold text-muted">{% trans "Errors" %}</div>
+    </div>
+    {% endif %}
+    {% if warnings %}
+    <div class="text-center">
+      <span class="badge bg-warning text-dark fs-4 px-3 py-2">{{ warnings }}</span>
+      <div class="mt-1 small fw-bold text-muted">{% trans "Warnings" %}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="text-center border-top pt-2 mt-2">
+    <span class="text-muted small">{% trans "Last" %} {{ time_label }}</span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+    {% if cached %}
+      <small class="text-muted"><i class="mdi mdi-cached"></i> {% trans "Cached" %}</small>
+    {% else %}
+      <small class="text-muted"><i class="mdi mdi-check-circle"></i> {% trans "Live" %}</small>
+    {% endif %}
+    {% if graylog_url %}
+      <a href="{{ graylog_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+        <i class="mdi mdi-open-in-new"></i> {% trans "Graylog" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-center text-muted py-2">
+    <i class="mdi mdi-information-outline"></i>
+    {% trans "No log data available." %}
+  </p>
+{% endif %}

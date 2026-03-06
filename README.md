@@ -30,6 +30,11 @@ View Graylog logs directly on Device and VirtualMachine pages.
 
 ![Logs Tab](https://raw.githubusercontent.com/sieteunoseis/netbox-graylog/main/screenshots/netbox-graylog-logs.png)
 
+### Dashboard Widget
+Graylog summary widget showing total log volume, errors, and warnings.
+
+![Dashboard Widget](https://raw.githubusercontent.com/sieteunoseis/netbox-graylog/main/screenshots/netbox-graylog-widget.png)
+
 ## Requirements
 
 - NetBox 4.0 or higher (tested on NetBox 4.x only)

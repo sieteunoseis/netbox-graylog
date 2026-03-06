@@ -8,7 +8,7 @@ import logging
 
 from netbox.plugins import PluginConfig
 
-__version__ = "1.1.6"
+__version__ = "1.1.7"
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,8 @@ class GraylogConfig(PluginConfig):
     def ready(self):
         """Register endpoint view if netbox_endpoints is available."""
         super().ready()
+        from . import widgets  # noqa: F401
+
         self._register_endpoint_views()
 
     def _register_endpoint_views(self):

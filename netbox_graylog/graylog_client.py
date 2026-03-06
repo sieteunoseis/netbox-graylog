@@ -206,6 +206,41 @@ class GraylogClient:
         result["vm_name"] = vm.name
         return result
 
+    def get_log_summary(self, time_range=3600, cache_timeout=120):
+        """Get aggregate log volume and error/warning counts.
+
+        Args:
+            time_range: Time window in seconds
+            cache_timeout: Cache duration in seconds
+
+        Returns:
+            dict with {total, errors, warnings, cached} or {error}
+        """
+        cache_key = f"graylog_log_summary_{time_range}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            cached["cached"] = True
+            return cached
+
+        # Get total count
+        total_result = self.search_logs("*", time_range=time_range, limit=1)
+        if total_result.get("error"):
+            return {"error": total_result["error"]}
+
+        # Get error count (syslog level 3)
+        error_result = self.search_logs("level:3", time_range=time_range, limit=1)
+        # Get warning count (syslog level 4)
+        warning_result = self.search_logs("level:4", time_range=time_range, limit=1)
+
+        summary = {
+            "total": total_result.get("total_results", 0),
+            "errors": error_result.get("total_results", 0),
+            "warnings": warning_result.get("total_results", 0),
+            "cached": False,
+        }
+        cache.set(cache_key, summary, cache_timeout)
+        return summary
+
 
 # Singleton instance
 _client = None
