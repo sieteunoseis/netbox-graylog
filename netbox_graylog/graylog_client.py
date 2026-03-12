@@ -184,7 +184,7 @@ class GraylogClient:
             hostname = hostname.split(".")[0]
 
         # Try hostname first - use wildcard for matching (Graylog wildcards are case-insensitive)
-        # Append * to match FQDN variations (e.g., admagw01 matches ADMagw01.ohsu.edu)
+        # Append * to match FQDN variations (e.g., switch01 matches switch01.example.com)
         query = f"{search_field}:{hostname}*"
         result = self.search_logs(query)
 
