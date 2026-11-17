@@ -20,6 +20,9 @@ from virtualization.models import VirtualMachine
 from .forms import GraylogSettingsForm
 from .graylog_client import get_client
 
+# Tab order on object pages; override with PLUGINS_CONFIG["netbox_graylog"]["tab_weight"]
+TAB_WEIGHT = settings.PLUGINS_CONFIG.get("netbox_graylog", {}).get("tab_weight", 9004)
+
 # Check if netbox_endpoints plugin is installed
 try:
     from netbox_endpoints.models import Endpoint
@@ -38,7 +41,7 @@ class DeviceGraylogLogsView(generic.ObjectView):
 
     tab = ViewTab(
         label="Graylog",
-        weight=9004,
+        weight=TAB_WEIGHT,
         permission="dcim.view_device",
         hide_if_empty=False,
     )
@@ -135,7 +138,7 @@ class VirtualMachineGraylogLogsView(generic.ObjectView):
 
     tab = ViewTab(
         label="Graylog",
-        weight=9004,
+        weight=TAB_WEIGHT,
         permission="virtualization.view_virtualmachine",
         hide_if_empty=False,
     )

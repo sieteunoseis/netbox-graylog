@@ -8,7 +8,7 @@ import logging
 
 from netbox.plugins import PluginConfig
 
-__version__ = "1.1.9"
+__version__ = "1.2.0"
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class GraylogConfig(PluginConfig):
     """Plugin configuration for NetBox Graylog integration."""
 
     name = "netbox_graylog"
-    verbose_name = "NetBox Graylog"
+    verbose_name = "Graylog"
     description = "Display recent Graylog logs in device and VM detail pages"
     version = __version__
     author = "Jeremy Worden"
@@ -31,6 +31,8 @@ class GraylogConfig(PluginConfig):
 
     # Default configuration values
     default_settings = {
+        "top_level_menu": True,
+        "tab_weight": 9004,
         "graylog_url": "http://graylog:9000",
         "graylog_api_token": "",
         "log_limit": 50,
@@ -71,6 +73,8 @@ class GraylogConfig(PluginConfig):
             from netbox_endpoints.models import Endpoint
             from utilities.views import ViewTab, register_model_view
 
+            from .views import TAB_WEIGHT
+
             @register_model_view(Endpoint, name="graylog_logs", path="logs")
             class EndpointGraylogLogsView(generic.ObjectView):
                 """Display Graylog logs for an Endpoint with async loading."""
@@ -80,7 +84,7 @@ class GraylogConfig(PluginConfig):
 
                 tab = ViewTab(
                     label="Graylog",
-                    weight=9004,
+                    weight=TAB_WEIGHT,
                     permission="netbox_endpoints.view_endpoint",
                     hide_if_empty=False,
                 )
